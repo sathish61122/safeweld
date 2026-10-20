@@ -1,0 +1,84 @@
+
+/*
+  SafeWeld - Smart Welding Safety System
+  Controller: ESP32
+
+  DEMO PROTOTYPE ONLY.
+  Thresholds are simulated ADC values, not certified
+  gas concentrations or oxygen safety limits.
+*/
+
+const int GAS_SENSOR = 34;
+const int OXYGEN_SENSOR = 35;
+
+const int RED_LED = 25;
+const int GREEN_LED = 26;
+const int BUZZER = 27;
+const int SHUTDOWN_SIGNAL = 33;
+
+// Demo values only: calibrate actual sensors separately
+const int GAS_LIMIT = 1800;
+const int OXYGEN_MIN = 1000;
+const int OXYGEN_MAX = 3000;
+
+bool alarmActive = true;
+
+void setAlarm() {
+  digitalWrite(RED_LED, HIGH);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(BUZZER, HIGH);
+  digitalWrite(SHUTDOWN_SIGNAL, HIGH);
+  alarmActive = true;
+}
+
+void setDemoReady() {
+  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, HIGH);
+  digitalWrite(BUZZER, LOW);
+  digitalWrite(SHUTDOWN_SIGNAL, LOW);
+  alarmActive = false;
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED_LED, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(SHUTDOWN_SIGNAL, OUTPUT);
+
+  // Start in an alarm / not-ready state
+  setAlarm();
+
+  Serial.println("SafeWeld initializing...");
+}
+
+void loop() {
+  int gasValue = analogRead(GAS_SENSOR);
+  int oxygenValue = analogRead(OXYGEN_SENSOR);
+
+  // Simulated inputs; not actual gas/O2 measurements
+  bool gasUnsafe = gasValue >= GAS_LIMIT;
+
+  bool oxygenUnsafe =
+      oxygenValue < OXYGEN_MIN ||
+      oxygenValue > OXYGEN_MAX;
+
+  bool unsafe = gasUnsafe || oxygenUnsafe;
+
+  Serial.print("Gas ADC: ");
+  Serial.print(gasValue);
+
+  Serial.print(" | Oxygen ADC: ");
+  Serial.print(oxygenValue);
+
+  if (unsafe) {
+    setAlarm();
+    Serial.println(" | UNSAFE - SHUTDOWN REQUEST");
+  } else {
+    setDemoReady();
+    Serial.println(" | DEMO RANGE OK");
+  }
+
+  delay(250);
+}
