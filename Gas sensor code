@@ -1,0 +1,51 @@
+
+/*
+  SafeWeld - MQ-2 Gas Sensor Demo
+  ESP32 GPIO 34 = Analog gas input
+  GPIO 25 = Red LED
+  GPIO 27 = Buzzer driver
+
+  DEMO ONLY: ADC threshold is not a real
+  petrol-vapour safety limit.
+*/
+
+const int GAS_SENSOR = 34;
+const int RED_LED = 25;
+const int BUZZER = 27;
+
+// Demo threshold only; calibrate for the test setup
+const int GAS_LIMIT = 1800;
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED_LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+
+  // Start with alarm active until first reading
+  digitalWrite(RED_LED, HIGH);
+  digitalWrite(BUZZER, HIGH);
+
+  Serial.println("SafeWeld MQ-2 Demo Started");
+}
+
+void loop() {
+  int gasValue = analogRead(GAS_SENSOR);
+
+  Serial.print("Gas sensor ADC value: ");
+  Serial.println(gasValue);
+
+  if (gasValue >= GAS_LIMIT) {
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(BUZZER, HIGH);
+
+    Serial.println("WARNING: Demo threshold exceeded!");
+  } else {
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(BUZZER, LOW);
+
+    Serial.println("Demo reading below threshold");
+  }
+
+  delay(500);
+}
