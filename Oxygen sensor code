@@ -1,0 +1,66 @@
+
+/*
+  SafeWeld - Oxygen Monitoring Demo
+  Controller: ESP32
+
+  GPIO 35 = Oxygen sensor analog input
+  GPIO 25 = Red LED
+  GPIO 26 = Green LED
+  GPIO 27 = Buzzer driver
+
+  DEMO ONLY:
+  ADC thresholds are simulated values,
+  NOT actual oxygen percentages or safety limits.
+*/
+
+const int OXYGEN_SENSOR = 35;
+
+const int RED_LED = 25;
+const int GREEN_LED = 26;
+const int BUZZER = 27;
+
+// Demo ADC range only
+const int OXYGEN_MIN_DEMO = 1000;
+const int OXYGEN_MAX_DEMO = 3000;
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(RED_LED, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+
+  // Begin in alarm / not-ready state
+  digitalWrite(RED_LED, HIGH);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(BUZZER, HIGH);
+
+  Serial.println("SafeWeld Oxygen Demo Started");
+}
+
+void loop() {
+  int oxygenADC = analogRead(OXYGEN_SENSOR);
+
+  bool oxygenOutsideDemoRange =
+      oxygenADC < OXYGEN_MIN_DEMO ||
+      oxygenADC > OXYGEN_MAX_DEMO;
+
+  Serial.print("Oxygen input ADC: ");
+  Serial.println(oxygenADC);
+
+  if (oxygenOutsideDemoRange) {
+    digitalWrite(RED_LED, HIGH);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BUZZER, HIGH);
+
+    Serial.println("WARNING: Oxygen input outside demo range");
+  } else {
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, HIGH);
+    digitalWrite(BUZZER, LOW);
+
+    Serial.println("Demo input within configured range");
+  }
+
+  delay(500);
+}
